@@ -35,6 +35,10 @@
             <!-- Formulário de Inscrição -->
             <div id="form-container">
                 <input type="text" id="nome-jogador" placeholder="Seu nome" class="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="flex items-center mb-4 space-x-2">
+                    <label for="horas-jogadas" class="text-gray-700 font-bold">Horas de Jogo:</label>
+                    <input type="number" id="horas-jogadas" value="1" min="1" class="w-20 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center">
+                </div>
                 <button id="adicionar-btn" class="w-full bg-blue-600 text-white font-bold p-3 rounded-lg hover:bg-blue-700 transition-colors duration-200">
                     Adicionar à Lista
                 </button>
@@ -189,6 +193,7 @@
         const countdownEl = document.getElementById('countdown');
         const formContainerEl = document.getElementById('form-container');
         const nomeInput = document.getElementById('nome-jogador');
+        const horasInput = document.getElementById('horas-jogadas');
         const adicionarBtn = document.getElementById('adicionar-btn');
         const listaJogadoresEl = document.getElementById('lista-jogadores');
         const relatorioBtn = document.getElementById('relatorio-btn');
@@ -225,8 +230,17 @@
 
         // Variável global para armazenar o nome do jogador no modal
         let jogadorParaImprevisto = null;
-        const VALOR_QUADRA = 70.00;
+        const PRECO_HORA = 70.00;
         const TAXA_IMPREVISTO = 3.00;
+        let valorQuadra = 0;
+
+
+        // Função para calcular o valor da quadra com base nas horas selecionadas
+        const calcularValorQuadra = () => {
+            const horas = parseInt(horasInput.value, 10);
+            valorQuadra = horas * PRECO_HORA;
+        };
+
 
         // Função para exibir mensagens com temporizador
         const showMessage = (message, isError = false) => {
@@ -282,6 +296,7 @@
                 adicionarBtn.disabled = true;
                 adicionarBtn.classList.add('opacity-50', 'cursor-not-allowed');
                 nomeInput.disabled = true;
+                horasInput.disabled = true;
                 encerrarListaBtn.classList.add('hidden');
                 fetchPlayers();
             } else {
@@ -303,6 +318,7 @@
                 adicionarBtn.disabled = false;
                 adicionarBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                 nomeInput.disabled = false;
+                horasInput.disabled = false;
                 encerrarListaBtn.classList.remove('hidden');
             }
         };
@@ -523,13 +539,13 @@
                 const numJogadoresPresentes = inscritos.length;
                 const numImprevistos = imprevistos.length;
                 const valorArrecadadoImprevistos = numImprevistos * TAXA_IMPREVISTO;
-                const valorPorJogadorTotal = (numJogadoresTotal > 0) ? VALOR_QUADRA / numJogadoresTotal : 0;
+                const valorPorJogadorTotal = (numJogadoresTotal > 0) ? valorQuadra / numJogadoresTotal : 0;
                 
                 relatorioResumoEl.innerHTML = `
                     <p class="text-sm"><span class="font-bold">Total de Inscritos:</span> ${allPlayers.length}</p>
                     <p class="text-sm"><span class="font-bold">Jogadores Presentes:</span> ${numJogadoresPresentes}</p>
                     <p class="text-sm"><span class="font-bold">Imprevistos Registados:</span> ${numImprevistos}</p>
-                    <p class="text-sm mt-2"><span class="font-bold">Valor da Quadra:</span> R$ ${VALOR_QUADRA.toFixed(2)}</p>
+                    <p class="text-sm mt-2"><span class="font-bold">Valor da Quadra:</span> R$ ${valorQuadra.toFixed(2)}</p>
                     <p class="text-sm"><span class="font-bold text-green-600">Valor por Jogador:</span> R$ ${valorPorJogadorTotal.toFixed(2)}</p>
                     <div class="mt-4 bg-yellow-100 p-3 rounded-lg">
                         <p class="font-bold text-lg">Caixa do Vôlei</p>
@@ -574,7 +590,7 @@
                 }
 
                 const numJogadoresTotal = allPlayers.length;
-                const valorPorJogadorTotal = (numJogadoresTotal > 0) ? VALOR_QUADRA / numJogadoresTotal : 0;
+                const valorPorJogadorTotal = (numJogadoresTotal > 0) ? valorQuadra / numJogadoresTotal : 0;
                 
                 listaPagamentosEl.innerHTML = '';
 
@@ -753,6 +769,8 @@
         refreshBtn.addEventListener('click', fetchPlayers);
         adicionarBtn.addEventListener('click', adicionarJogador);
         // Botão de arquivar foi removido para simplificar o fluxo.
+        horasInput.addEventListener('input', calcularValorQuadra);
+
 
         // Abrir modal de encerramento
         encerrarListaBtn.addEventListener('click', () => {
@@ -782,6 +800,7 @@
         updateCountdown();
         fetchPlayers();
         fetchNextListaNumber();
+        calcularValorQuadra();
     </script>
 </body>
 </html>
