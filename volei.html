@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Vôlei</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        /* Estilo para a fonte "Arial Black" em negrito */
+        .font-arial-black {
+            font-family: 'Arial Black', Arial, sans-serif;
+            font-weight: 900;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-xl relative">
+        <div id="main-view">
+            <h1 class="text-3xl font-bold text-center text-blue-800 mb-2">Lista de Presença</h1>
+
+            <!-- Número de série da lista atual -->
+            <div id="current-lista-numero" class="text-center text-black mb-4 font-arial-black hidden">
+                <!-- Conteúdo será inserido aqui via JavaScript -->
+            </div>
+
+            <!-- Contagem Regressiva -->
+            <p id="countdown" class="text-red-600 font-bold text-lg text-center mb-6"></p>
+
+            <!-- Formulário de Inscrição -->
+            <div id="form-container">
+                <input type="text" id="nome-jogador" placeholder="Seu nome" class="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="adicionar-btn" class="w-full bg-blue-600 text-white font-bold p-3 rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                    Adicionar à Lista
+                </button>
+            </div>
+
+            <hr class="my-6">
+
+            <!-- Lista de Jogadores -->
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-blue-800 mb-4">Jogadores Inscritos</h2>
+                <ul id="lista-jogadores" class="space-y-2">
+                    <!-- Jogadores serão inseridos aqui via JavaScript -->
+                </ul>
+            </div>
+
+            <hr class="my-6">
+
+            <!-- Botões de Ação -->
+            <div class="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4">
+                <button id="relatorio-btn" class="w-full max-w-xs bg-green-600 text-white font-bold p-3 rounded-lg hover:bg-green-700 transition-colors duration-200">
+                    Relatório Geral
+                </button>
+                <button id="relatorio-pagamento-btn" class="w-full max-w-xs bg-purple-600 text-white font-bold p-3 rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                    Relatório de Pagamento
+                </button>
+                <button id="historico-btn" class="w-full max-w-xs bg-gray-600 text-white font-bold p-3 rounded-lg hover:bg-gray-700 transition-colors duration-200">
+                    Listas fechadas
+                </button>
+            </div>
+        </div>
+
+        <!-- Seção de Histórico de Listas (inicialmente oculta) -->
+        <div id="history-view" class="hidden">
+            <h1 class="text-3xl font-bold text-center text-blue-800 mb-4">Histórico de Listas</h1>
+            <ul id="lista-historico" class="space-y-4">
+                <!-- Listas do histórico serão inseridas aqui via JavaScript -->
+            </ul>
+            <div class="flex justify-center mt-6">
+                <button id="back-to-main-btn" class="w-full max-w-xs bg-gray-600 text-white font-bold p-3 rounded-lg hover:bg-gray-700 transition-colors duration-200">
+                    Voltar
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal para Imprevistos -->
+    <div id="imprevistos-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+            <h3 class="text-xl font-bold mb-4">Comunicar Imprevisto</h3>
+            <input type="text" id="nome-imprevisto" placeholder="Seu nome" class="w-full p-3 mb-4 border rounded-lg">
+            <textarea id="motivo-imprevisto" placeholder="Motivo do imprevisto" rows="3" class="w-full p-3 mb-4 border rounded-lg"></textarea>
+            <div class="flex justify-end space-x-2">
+                <button id="cancelar-imprevisto-btn" class="bg-gray-300 text-gray-800 font-bold p-2 rounded-lg">Cancelar</button>
+                <button id="confirmar-imprevisto-btn" class="bg-red-600 text-white font-bold p-2 rounded-lg">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Relatório Geral -->
+    <div id="relatorio-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Relatório Geral</h3>
+            <div id="relatorio-resumo" class="bg-gray-100 p-4 rounded-lg mb-4">
+                <!-- Resumo será inserido aqui via JavaScript -->
+            </div>
+            <h3 class="text-xl font-bold mb-4 mt-6">Imprevistos Registados</h3>
+            <ul id="lista-imprevistos" class="space-y-4">
+                <!-- Lista de imprevistos será inserida aqui via JavaScript -->
+            </ul>
+            <div class="flex justify-end mt-4">
+                <button id="fechar-relatorio-btn" class="bg-gray-300 text-gray-800 font-bold p-2 rounded-lg">Fechar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal para Relatório de Pagamento -->
+    <div id="pagamento-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Relatório de Pagamento</h3>
+            <ul id="lista-pagamentos" class="space-y-4">
+                <!-- Lista de pagamentos será inserida aqui via JavaScript -->
+            </ul>
+            <div class="flex justify-end mt-4">
+                <button id="fechar-pagamento-btn" class="bg-gray-300 text-gray-800 font-bold p-2 rounded-lg">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Visualização de Lista Histórica -->
+    <div id="historico-detalhes-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 id="historico-detalhes-titulo" class="text-2xl font-bold mb-4">Detalhes da Lista</h3>
+            <ul id="lista-historico-detalhes" class="space-y-2">
+                <!-- Detalhes da lista histórica serão inseridos aqui -->
+            </ul>
+            <div class="flex justify-end mt-4">
+                <button id="fechar-historico-detalhes-btn" class="bg-gray-300 text-gray-800 font-bold p-2 rounded-lg">Fechar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Novo Modal para Encerrar Lista -->
+    <div id="encerrar-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+            <h3 class="text-xl font-bold mb-4">Encerrar Lista</h3>
+            <p class="mb-4">Tem certeza de que deseja encerrar a lista? Todos os nomes serão removidos e nenhuma taxa será cobrada.</p>
+            <textarea id="motivo-encerrar" placeholder="Motivo para encerrar a lista (opcional)" rows="3" class="w-full p-3 mb-4 border rounded-lg"></textarea>
+            <div class="flex justify-end space-x-2">
+                <button id="cancelar-encerrar-btn" class="bg-gray-300 text-gray-800 font-bold p-2 rounded-lg">Cancelar</button>
+                <button id="confirmar-encerrar-btn" class="bg-red-600 text-white font-bold p-2 rounded-lg">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Mensagem de feedback (substitui alert) -->
+    <div id="message-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+            <p id="message-text" class="text-center"></p>
+        </div>
+    </div>
+
+    <!-- Botão de Atualizar -->
+    <button id="refresh-btn" class="fixed top-4 right-4 bg-gray-500 text-white p-3 rounded-full shadow-lg hover:bg-gray-600 transition-colors duration-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m3.989-1.99L4 4m0 5l4.582 4.582" />
+        </svg>
+    </button>
+    
+    <!-- Botão de Encerrar Lista -->
+    <button id="encerrar-lista-btn" class="fixed bottom-4 right-4 bg-red-600 text-white p-3 rounded-full shadow-lg hover:bg-red-700 transition-colors duration-200 hidden">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+    </button>
+
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        // Suas credenciais do Supabase
+        const supabaseUrl = 'https://atpefcguapwdgihgxacg.supabase.co';
+        const supabaseKey = 'sb_publishable_q9oPY1_YrtJz97KFDs7hHg_knYdc8o8';
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // Referências aos elementos do DOM
+        const mainView = document.getElementById('main-view');
+        const historyView = document.getElementById('history-view');
+        const backToMainBtn = document.getElementById('back-to-main-btn');
+
+        const countdownEl = document.getElementById('countdown');
+        const formContainerEl = document.getElementById('form-container');
+        const nomeInput = document.getElementById('nome-jogador');
+        const adicionarBtn = document.getElementById('adicionar-btn');
+        const listaJogadoresEl = document.getElementById('lista-jogadores');
+        const relatorioBtn = document.getElementById('relatorio-btn');
+        const relatorioPagamentoBtn = document.getElementById('relatorio-pagamento-btn');
+        const historicoBtn = document.getElementById('historico-btn');
+        const encerrarListaBtn = document.getElementById('encerrar-lista-btn');
+        const imprevistosModal = document.getElementById('imprevistos-modal');
+        const nomeImprevistoInput = document.getElementById('nome-imprevisto');
+        const motivoImprevistoInput = document.getElementById('motivo-imprevisto');
+        const confirmarImprevistoBtn = document.getElementById('confirmar-imprevisto-btn');
+        const cancelarImprevistoBtn = document.getElementById('cancelar-imprevisto-btn');
+        const relatorioModal = document.getElementById('relatorio-modal');
+        const relatorioResumoEl = document.getElementById('relatorio-resumo');
+        const listaImprevistosEl = document.getElementById('lista-imprevistos');
+        const fecharRelatorioBtn = document.getElementById('fechar-relatorio-btn');
+        const pagamentoModal = document.getElementById('pagamento-modal');
+        const listaPagamentosEl = document.getElementById('lista-pagamentos');
+        const fecharPagamentoBtn = document.getElementById('fechar-pagamento-btn');
+        const historicoModal = document.getElementById('historico-modal');
+        const listaHistoricoEl = document.getElementById('lista-historico');
+        const fecharHistoricoBtn = document.getElementById('fechar-historico-btn');
+        const historicoDetalhesModal = document.getElementById('historico-detalhes-modal');
+        const historicoDetalhesTitulo = document.getElementById('historico-detalhes-titulo');
+        const listaHistoricoDetalhesEl = document.getElementById('lista-historico-detalhes');
+        const fecharHistoricoDetalhesBtn = document.getElementById('fechar-historico-detalhes-btn');
+        const messageModal = document.getElementById('message-modal');
+        const messageText = document.getElementById('message-text');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const currentListaNumeroEl = document.getElementById('current-lista-numero');
+        const encerrarModal = document.getElementById('encerrar-modal');
+        const motivoEncerrarInput = document.getElementById('motivo-encerrar');
+        const confirmarEncerrarBtn = document.getElementById('confirmar-encerrar-btn');
+        const cancelarEncerrarBtn = document.getElementById('cancelar-encerrar-btn');
+
+        // Variável global para armazenar o nome do jogador no modal
+        let jogadorParaImprevisto = null;
+        const VALOR_QUADRA = 70.00;
+        const TAXA_IMPREVISTO = 3.00;
+
+        // Função para exibir mensagens com temporizador
+        const showMessage = (message, isError = false) => {
+            messageText.textContent = message;
+            messageText.className = `text-center ${isError ? 'text-red-600' : 'text-green-600'}`;
+            messageModal.classList.remove('hidden');
+
+            setTimeout(() => {
+                messageModal.classList.add('hidden');
+            }, 4000); // 4000 milissegundos = 4 segundos
+        };
+
+        // Função para formatar o tempo (adiciona zero à esquerda se necessário)
+        const formatTime = (time) => String(Math.floor(time)).padStart(2, '0');
+
+        // Função para buscar o próximo número de série da lista
+        const fetchNextListaNumber = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('historico_listas')
+                    .select('lista_numero')
+                    .order('lista_numero', { ascending: false })
+                    .limit(1);
+
+                if (error) {
+                    console.error('Erro ao buscar o número de série:', error);
+                    currentListaNumeroEl.textContent = 'Lista Atual';
+                } else {
+                    const lastNumber = data.length > 0 ? data[0].lista_numero : 0;
+                    const nextNumber = lastNumber + 1;
+                    currentListaNumeroEl.innerHTML = `Lista Atual <span class="font-arial-black text-lg text-black">#${String(nextNumber).padStart(6, '0')}</span>`;
+                }
+            } catch (err) {
+                console.error('Erro de rede ou Supabase:', err);
+                currentListaNumeroEl.textContent = 'Lista Atual';
+            }
+        };
+
+
+        // Função para atualizar a contagem regressiva e o estado do formulário
+        const updateCountdown = () => {
+            let targetDate = new Date();
+            const now = new Date();
+            const brasiliaOffset = -3;
+            const currentDay = now.getUTCDay();
+            const currentHour = now.getUTCHours() + brasiliaOffset;
+
+            // Define o horário de fecho (quinta-feira, 10h)
+            const isLocked = (currentDay === 4 && currentHour >= 10) || (currentDay === 5 && currentHour < 1);
+
+            if (isLocked) {
+                countdownEl.textContent = `Bloqueado. A lista será reaberta na sexta-feira à 00:01h.`;
+                adicionarBtn.disabled = true;
+                adicionarBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                nomeInput.disabled = true;
+                encerrarListaBtn.classList.add('hidden');
+                fetchPlayers();
+            } else {
+                if (currentDay !== 4) {
+                    targetDate.setDate(targetDate.getDate() + (4 - currentDay + 7) % 7);
+                }
+                targetDate.setHours(10, 0, 0, 0);
+                if (targetDate.getTime() < now.getTime()) {
+                    targetDate.setDate(targetDate.getDate() + 7);
+                }
+
+                const timeLeft = targetDate.getTime() - now.getTime();
+                const days = formatTime(timeLeft / (1000 * 60 * 60 * 24));
+                const hours = formatTime((timeLeft / (1000 * 60 * 60)) % 24);
+                const minutes = formatTime((timeLeft / (1000 * 60)) % 60);
+                const seconds = formatTime((timeLeft / 1000) % 60);
+
+                countdownEl.textContent = `Tempo restante para se inscrever: ${days}d ${hours}h ${minutes}m ${seconds}s`;
+                adicionarBtn.disabled = false;
+                adicionarBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                nomeInput.disabled = false;
+                encerrarListaBtn.classList.remove('hidden');
+            }
+        };
+
+        // Adicionar jogador à lista
+        const adicionarJogador = async () => {
+            const nome = nomeInput.value.trim();
+            if (!nome) {
+                showMessage('Por favor, insira um nome.', true); 
+                return;
+            }
+
+            try {
+                const { data: existingPlayer } = await supabase
+                    .from('lista')
+                    .select('*')
+                    .eq('nome', nome)
+                    .single();
+
+                if (existingPlayer) {
+                    showMessage('Este nome já está na lista.', true);
+                    return;
+                }
+
+                const { error } = await supabase
+                    .from('lista')
+                    .insert({ nome: nome });
+
+                if (error) {
+                    console.error('Erro ao adicionar jogador:', error);
+                    showMessage('Ocorreu um erro ao adicionar o jogador. Verifique a sua conexão ou as configurações do Supabase.', true);
+                } else {
+                    nomeInput.value = '';
+                    showMessage('Jogador adicionado com sucesso!');
+                }
+            } catch (err) {
+                console.error('Erro de rede ou Supabase:', err);
+                showMessage('Ocorreu um erro de rede. Por favor, tente novamente.', true);
+            }
+        };
+        
+        // Deletar jogador da lista
+        const deleteJogador = async (id) => {
+            try {
+                const { error } = await supabase
+                    .from('lista')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) {
+                    console.error('Erro ao remover jogador:', error);
+                    showMessage('Erro ao remover o jogador. Verifique a sua conexão.', true);
+                } else {
+                    showMessage('Jogador removido com sucesso!');
+                    await fetchPlayers();
+                }
+            } catch (err) {
+                console.error('Erro de rede ou Supabase:', err);
+                showMessage('Erro de rede ao remover o jogador. Tente novamente.', true);
+            }
+        };
+
+
+        // Renderizar a lista de jogadores
+        const renderPlayers = (players) => {
+            const now = new Date();
+            const brasiliaOffset = -3;
+            const currentHourBrasilia = now.getUTCHours() + brasiliaOffset;
+            const currentDay = now.getUTCDay();
+            const isLocked = (currentDay === 4 && currentHourBrasilia >= 10) || (currentDay === 5 && currentHourBrasilia < 1);
+
+            listaJogadoresEl.innerHTML = '';
+            if (players.length === 0) {
+                listaJogadoresEl.innerHTML = '<li class="text-gray-500 text-center">Nenhum jogador inscrito ainda.</li>';
+                return;
+            }
+
+            players.forEach((player, index) => {
+                const li = document.createElement('li');
+                li.className = 'bg-gray-50 p-3 rounded-lg flex justify-between items-center';
+                
+                let actionButton = '';
+                if (isLocked) {
+                    actionButton = `
+                        <button class="imprevisto-btn bg-red-600 text-white font-bold p-2 rounded-lg hover:bg-red-700 transition-colors duration-200" style="min-width: 120px;">
+                            imprevistos ?
+                        </button>
+                    `;
+                }
+
+                let deleteButton = '';
+                if (!isLocked) {
+                    deleteButton = `
+                        <button class="delete-btn text-gray-400 hover:text-red-500 transition-colors duration-200" data-id="${player.id}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    `;
+                }
+
+                li.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <span class="font-bold text-blue-800">${index + 1}.</span>
+                        <span class="text-gray-800">${player.nome}</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        ${actionButton}
+                        ${deleteButton}
+                        <span class="text-sm text-gray-500">${new Date(player.data_inscricao).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                `;
+                listaJogadoresEl.appendChild(li);
+            });
+        };
+
+        // Buscar jogadores e renderizar a lista
+        const fetchPlayers = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('lista')
+                    .select('*')
+                    .order('data_inscricao', { ascending: true });
+
+                if (error) {
+                    console.error('Erro ao buscar jogadores:', error);
+                    showMessage('Ocorreu um erro ao buscar a lista. Por favor, verifique as suas configurações do Supabase.', true);
+                } else {
+                    renderPlayers(data);
+                }
+            } catch (err) {
+                console.error('Erro de rede ou Supabase:', err);
+                showMessage('Erro de rede ao carregar a lista. Tente novamente mais tarde.', true);
+            }
+        };
+
+        // Escutar por mudanças na tabela usando a nova API de canais
+        const playersChannel = supabase.channel('players-list');
+        playersChannel
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'lista' }, (payload) => {
+                fetchPlayers();
+                if (!pagamentoModal.classList.contains('hidden')) {
+                    showPaymentReport();
+                }
+            })
+            .subscribe();
+
+        // Adicionar event listener ao contêiner da lista (delegação de eventos)
+        listaJogadoresEl.addEventListener('click', (event) => {
+            if (event.target.classList.contains('imprevisto-btn')) {
+                jogadorParaImprevisto = event.target.dataset.nome;
+                nomeImprevistoInput.value = jogadorParaImprevisto;
+                imprevistosModal.classList.remove('hidden');
+            }
+            if (event.target.closest('.delete-btn')) {
+                const jogadorId = event.target.closest('.delete-btn').dataset.id;
+                deleteJogador(jogadorId);
+            }
+        });
+
+        // Fechar modal de imprevistos
+        cancelarImprevistoBtn.addEventListener('click', () => {
+            imprevistosModal.classList.add('hidden');
+            nomeImprevistoInput.value = '';
+            motivoImprevistoInput.value = '';
+            jogadorParaImprevisto = null;
+        });
+
+        // Confirmar imprevisto
+        confirmarImprevistoBtn.addEventListener('click', async () => {
+            const motivo = motivoImprevistoInput.value.trim();
+
+            if (!jogadorParaImprevisto) {
+                showMessage('Nome de jogador não encontrado.', true);
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('lista')
+                    .update({ status: 'imprevisto', motivo_imprevisto: motivo })
+                    .eq('nome', jogadorParaImprevisto);
+
+                if (error) {
+                    console.error('Erro ao atualizar imprevisto:', error);
+                    showMessage('Erro ao registar o imprevisto. Verifique se o nome está correto.', true);
+                } else {
+                    showMessage('Imprevisto registado com sucesso.');
+                    imprevistosModal.classList.add('hidden');
+                    nomeImprevistoInput.value = '';
+                    motivoImprevistoInput.value = '';
+                    jogadorParaImprevisto = null;
+                }
+            } catch (err) {
+                console.error('Erro de rede ou Supabase:', err);
+                showMessage('Erro de rede ao registar o imprevisto. Tente novamente.', true);
+            }
+        });
+
+        // Função para mostrar o relatório geral
+        const showGeneralReport = async () => {
+             try {
+                const { data: allPlayers, error } = await supabase
+                    .from('lista')
+                    .select('*')
+                    .order('data_inscricao', { ascending: true });
+
+                if (error) {
+                    console.error('Erro ao buscar dados para relatório:', error);
+                    showMessage('Erro ao carregar o relatório.', true);
+                    return;
+                }
+
+                const inscritos = allPlayers.filter(p => p.status === 'inscrito');
+                const imprevistos = allPlayers.filter(p => p.status === 'imprevisto');
+
+                const numJogadoresTotal = allPlayers.length;
+                const numJogadoresPresentes = inscritos.length;
+                const numImprevistos = imprevistos.length;
+                const valorArrecadadoImprevistos = numImprevistos * TAXA_IMPREVISTO;
+                const valorPorJogadorTotal = (numJogadoresTotal > 0) ? VALOR_QUADRA / numJogadoresTotal : 0;
+                
+                relatorioResumoEl.innerHTML = `
+                    <p class="text-sm"><span class="font-bold">Total de Inscritos:</span> ${allPlayers.length}</p>
+                    <p class="text-sm"><span class="font-bold">Jogadores Presentes:</span> ${numJogadoresPresentes}</p>
+                    <p class="text-sm"><span class="font-bold">Imprevistos Registados:</span> ${numImprevistos}</p>
+                    <p class="text-sm mt-2"><span class="font-bold">Valor da Quadra:</span> R$ ${VALOR_QUADRA.toFixed(2)}</p>
+                    <p class="text-sm"><span class="font-bold text-green-600">Valor por Jogador:</span> R$ ${valorPorJogadorTotal.toFixed(2)}</p>
+                    <div class="mt-4 bg-yellow-100 p-3 rounded-lg">
+                        <p class="font-bold text-lg">Caixa do Vôlei</p>
+                        <p class="text-sm">R$ ${valorArrecadadoImprevistos.toFixed(2)}</p>
+                    </div>
+                `;
+
+                listaImprevistosEl.innerHTML = '';
+                if (imprevistos.length === 0) {
+                    listaImprevistosEl.innerHTML = '<li class="text-gray-500 text-center">Nenhum imprevisto registado.</li>';
+                } else {
+                    imprevistos.forEach(imprevisto => {
+                        const li = document.createElement('li');
+                        li.className = 'bg-gray-50 p-4 rounded-lg shadow-sm';
+                        li.innerHTML = `
+                            <p class="font-bold text-gray-800">${imprevisto.nome}</p>
+                            <p class="text-sm text-gray-600">Motivo: ${imprevisto.motivo_imprevisto}</p>
+                            <p class="text-xs text-gray-500 mt-1">Registado em: ${new Date(imprevisto.data_inscricao).toLocaleString('pt-BR')}</p>
+                        `;
+                        listaImprevistosEl.appendChild(li);
+                    });
+                }
+                relatorioModal.classList.remove('hidden');
+            } catch (err) {
+                console.error('Erro ao carregar relatório:', err);
+                showMessage('Erro de rede ao carregar o relatório. Tente novamente mais tarde.', true);
+            }
+        };
+
+        // Abrir modal de relatório de pagamento
+        const showPaymentReport = async () => {
+            try {
+                const { data: allPlayers, error } = await supabase
+                    .from('lista')
+                    .select('*')
+                    .order('nome', { ascending: true });
+
+                if (error) {
+                    console.error('Erro ao buscar jogadores para pagamento:', error);
+                    showMessage('Erro ao carregar o relatório de pagamento.', true);
+                    return;
+                }
+
+                const numJogadoresTotal = allPlayers.length;
+                const valorPorJogadorTotal = (numJogadoresTotal > 0) ? VALOR_QUADRA / numJogadoresTotal : 0;
+                
+                listaPagamentosEl.innerHTML = '';
+
+                if (allPlayers.length === 0) {
+                    listaPagamentosEl.innerHTML = '<li class="text-gray-500 text-center">Nenhum jogador na lista.</li>';
+                } else {
+                    allPlayers.forEach(player => {
+                        const li = document.createElement('li');
+                        li.className = 'bg-gray-50 p-4 rounded-lg shadow-sm flex justify-between items-center';
+                        
+                        let valorAPagarDisplay;
+                        let statusCor = 'text-gray-600';
+
+                        if (player.status === 'imprevisto') {
+                            const valorBase = valorPorJogadorTotal;
+                            valorAPagarDisplay = `R$ ${valorBase.toFixed(2)} + 3 (taxa)`;
+                            statusCor = 'text-red-600';
+                        } else {
+                            valorAPagarDisplay = `R$ ${valorPorJogadorTotal.toFixed(2)}`;
+                            statusCor = 'text-green-600';
+                        }
+                        
+                        li.innerHTML = `
+                            <span class="font-bold text-gray-800">${player.nome}</span>
+                            <span class="font-bold ${statusCor}">${valorAPagarDisplay}</span>
+                        `;
+                        listaPagamentosEl.appendChild(li);
+                    });
+                }
+                pagamentoModal.classList.remove('hidden');
+            } catch (err) {
+                console.error('Erro de rede ou Supabase:', err);
+                showMessage('Erro de rede ao carregar o relatório de pagamento. Tente novamente mais tarde.', true);
+            }
+        };
+        // Função para encerrar a lista (e arquivar)
+        const encerrarLista = async (motivo) => {
+            try {
+                const { data: allPlayers, error } = await supabase
+                    .from('lista')
+                    .select('*')
+                    .order('data_inscricao', { ascending: true });
+
+                if (error) {
+                    console.error('Erro ao buscar lista para encerrar:', error);
+                    showMessage('Erro ao encerrar a lista. Por favor, verifique a conexão.', true);
+                    return;
+                }
+
+                if (allPlayers.length > 0) {
+                    // Arquiva a lista se ela não estiver vazia
+                    const { error: insertError } = await supabase
+                        .from('historico_listas')
+                        .insert({ lista_data: allPlayers, motivo_encerrar: motivo });
+
+                    if (insertError) {
+                        console.error('Erro ao inserir no histórico:', insertError);
+                        showMessage('Erro ao guardar a lista no histórico.', true);
+                        return;
+                    }
+                }
+
+                // Limpa a lista atual
+                const { error: deleteError } = await supabase
+                    .from('lista')
+                    .delete()
+                    .not('id', 'is', null);
+                
+                if (deleteError) {
+                    console.error('Erro ao limpar a lista atual:', deleteError);
+                    showMessage('Lista encerrada, mas houve um erro ao limpar a lista atual.', true);
+                } else {
+                    console.log('Lista encerrada. Motivo:', motivo || 'Não informado.');
+                    showMessage('Lista encerrada com sucesso!');
+                    fetchPlayers();
+                    await new Promise(resolve => setTimeout(resolve, 500)); // Espera para o Supabase processar
+                    fetchNextListaNumber();
+                }
+            } catch (err) {
+                console.error('Erro de rede ao encerrar a lista:', err);
+                showMessage('Erro de rede ao encerrar a lista. Tente novamente.', true);
+            }
+        };
+
+        // Função para buscar e renderizar o histórico de listas
+        const fetchHistory = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('historico_listas')
+                    .select('*')
+                    .order('data_criacao', { ascending: false });
+
+                if (error) {
+                    console.error('Erro ao buscar histórico:', error);
+                    listaHistoricoEl.innerHTML = `<li class="text-red-500 text-center">Erro ao carregar o histórico de listas.</li>`;
+                    return;
+                }
+
+                listaHistoricoEl.innerHTML = '';
+                if (data.length === 0) {
+                    listaHistoricoEl.innerHTML = '<li class="text-gray-500 text-center">Nenhuma lista arquivada ainda.</li>';
+                } else {
+                    data.forEach(lista => {
+                        const formattedNumber = lista.lista_numero ? `#${String(lista.lista_numero).padStart(6, '0')}` : 'N/A';
+                        const li = document.createElement('li');
+                        li.className = 'bg-gray-50 p-4 rounded-lg shadow-sm flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors duration-200';
+                        li.dataset.lista = JSON.stringify(lista.lista_data);
+                        li.dataset.data = new Date(lista.data_criacao).toLocaleString('pt-BR');
+                        li.dataset.motivo = lista.motivo_encerrar || '';
+                        li.innerHTML = `
+                            <div class="flex flex-col">
+                                <span class="text-lg font-black text-blue-800 font-arial-black">Lista ${formattedNumber}</span>
+                                <span class="text-sm text-gray-500">Criada em: ${new Date(lista.data_criacao).toLocaleDateString('pt-BR')}</span>
+                            </div>
+                            <span class="text-sm text-gray-500">${lista.lista_data.length} jogadores</span>
+                        `;
+                        listaHistoricoEl.appendChild(li);
+                    });
+                }
+            } catch (err) {
+                console.error('Erro de rede ao buscar histórico:', err);
+                listaHistoricoEl.innerHTML = `<li class="text-red-500 text-center">Erro de rede ao carregar o histórico.</li>`;
+            }
+        };
+
+        // Função para alternar entre a visualização principal e a do histórico
+        const toggleView = (view) => {
+            if (view === 'history') {
+                mainView.classList.add('hidden');
+                historyView.classList.remove('hidden');
+                fetchHistory(); // Busca e exibe o histórico
+            } else {
+                mainView.classList.remove('hidden');
+                historyView.classList.add('hidden');
+                fetchPlayers();
+                updateCountdown();
+                fetchNextListaNumber();
+            }
+        };
+
+        // Abrir detalhes de uma lista histórica
+        listaHistoricoEl.addEventListener('click', (event) => {
+            const li = event.target.closest('li');
+            if (li) {
+                const listaData = JSON.parse(li.dataset.lista);
+                const motivo = li.dataset.motivo;
+                historicoDetalhesTitulo.textContent = `Detalhes da Lista Arquivada`;
+                listaHistoricoDetalhesEl.innerHTML = '';
+
+                // Adicionar o motivo no início do modal de detalhes
+                const motivoEl = document.createElement('p');
+                motivoEl.className = 'text-sm text-gray-700 mb-4';
+                motivoEl.innerHTML = `Motivo do Encerramento: <span class="font-bold">${motivo || 'Não informado'}</span>`;
+                listaHistoricoDetalhesEl.appendChild(motivoEl);
+
+                listaData.forEach((player, index) => {
+                    const statusText = player.status === 'imprevisto' ? `Imprevisto: ${player.motivo_imprevisto}` : 'Presente';
+                    const liItem = document.createElement('li');
+                    liItem.className = 'bg-gray-100 p-2 rounded-lg';
+                    liItem.innerHTML = `<span class="font-bold">${index + 1}. ${player.nome}</span> - <span class="text-sm text-gray-600">${statusText}</span>`;
+                    listaHistoricoDetalhesEl.appendChild(liItem);
+                });
+                historicoDetalhesModal.classList.remove('hidden');
+            }
+        });
+
+        // Fechar modals
+        fecharRelatorioBtn.addEventListener('click', () => relatorioModal.classList.add('hidden'));
+        fecharPagamentoBtn.addEventListener('click', () => pagamentoModal.classList.add('hidden'));
+        fecharHistoricoDetalhesBtn.addEventListener('click', () => historicoDetalhesModal.classList.add('hidden'));
+        cancelarEncerrarBtn.addEventListener('click', () => encerrarModal.classList.add('hidden'));
+        
+        // Event listeners
+        relatorioBtn.addEventListener('click', showGeneralReport);
+        relatorioPagamentoBtn.addEventListener('click', showPaymentReport);
+        refreshBtn.addEventListener('click', fetchPlayers);
+        adicionarBtn.addEventListener('click', adicionarJogador);
+        // Botão de arquivar foi removido para simplificar o fluxo.
+
+        // Abrir modal de encerramento
+        encerrarListaBtn.addEventListener('click', () => {
+            encerrarModal.classList.remove('hidden');
+        });
+        
+        // Confirmar encerramento
+        confirmarEncerrarBtn.addEventListener('click', () => {
+            const motivo = motivoEncerrarInput.value.trim();
+            encerrarModal.classList.add('hidden');
+            encerrarLista(motivo);
+            toggleView('main');
+        });
+
+        // Event listener para o novo botão "Voltar"
+        backToMainBtn.addEventListener('click', () => {
+            toggleView('main');
+        });
+
+        // Event listener para o botão "Listas Fechadas"
+        historicoBtn.addEventListener('click', () => {
+            toggleView('history');
+        });
+
+        // Iniciar contagem regressiva e buscar a lista
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+        fetchPlayers();
+        fetchNextListaNumber();
+    </script>
+</body>
+</html>
